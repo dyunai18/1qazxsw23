@@ -1,5 +1,5 @@
 FROM centos:7
-MAINTAINER sample
+MAINTAINER kishitat
 
 #user add
 RUN useradd admin
@@ -32,28 +32,33 @@ RUN cd /root/ && \
     tar -xzvf latest.tar.gz && \
     cp -R /root/wordpress/* /var/www/html && \
     cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
+
 #edit wordpress config
 RUN sed -i -e "s/database_name_here/db_wordpress/" /var/www/html/wp-config.php && \
     sed -i -e "s/username_here/wq_user/" /var/www/html/wp-config.php && \
     sed -i -e "s/password_here/12345/" /var/www/html/wp-config.php
 
 RUN chown -R admin:admin /opt && \
-    chown -R admin:admin /run
+    chown -R admin:admin /run && \
+    chown -R admin:admin /var/www
 
-
-
+#initialize mariadb
 USER admin
-
 RUN mysqld_safe & \
     sleep 5 && \
     mysql -uroot -e "CREATE DATABASE db_wordpress;" && \
     mysql -uroot -e "GRANT ALL PRIVILEGES ON db_wordpress.* TO wq_user@localhost IDENTIFIED BY \"12345\";"
 
-RUN echo "#!/bin/bash"  > /home/admin/start.sh
-RUN echo "mysqld_safe &"  >> /home/admin/start.sh
-RUN echo "apachectl -DFOREGROUND "  >> /home/admin/start.sh
-RUN chmod u+x /home/admin/start.sh
+#create startup shell and add permmision
+RUN echo "#!/bin/bash"  > /home/admin/start.sh && \
+    echo "mysqld_safe &"  >> /home/admin/start.sh && \
+    echo "apachectl -DFOREGROUND "  >> /home/admin/start.sh && \
+    chmod u+x /home/admin/start.sh
 
+
+#EXPOSE port 8080 for web
 EXPOSE 8080
+
+USER admin
 
 ENTRYPOINT /home/admin/start.sh
