@@ -40,15 +40,6 @@ RUN sed -i -e "s/database_name_here/db_wordpress/" /var/www/html/wp-config.php &
     chmod -R a+rwX /var/www && \
     chown -R 1999:1999 /var/www
 
-
-
-#create startup shell and add permmision
-#ADD start.sh /tmp/start.sh
-#RUN mkdir /shells/ && \
-#    chmod a+rx /shells/ && \
-#    cp /tmp/start.sh /shells/start.sh && \
-#    chmod a+rx /shells/start.sh
-
 #ADD startup shells
 RUN mkdir /startup/
 copy startup /startup/
